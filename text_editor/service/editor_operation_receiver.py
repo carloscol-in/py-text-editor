@@ -4,7 +4,7 @@ import typing as t
 from text_editor.core.operations import TextOperation
 
 
-class EditorOperationManager:
+class EditorOperationReceiver:
     _method: str
 
     def __init__(
@@ -22,7 +22,7 @@ class EditorOperationManager:
         cls,
         editor: tk.Text,
         text_operation: TextOperation
-    ) -> 'EditorOperationManager':
+    ) -> 'EditorOperationReceiver':
         return cls(
             editor = editor,
             method = text_operation.operation,

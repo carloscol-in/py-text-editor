@@ -9,7 +9,7 @@ from .operations import (
 
 class BaseEditorAlteration(abc.ABC):
     @abc.abstractmethod
-    def run(self) -> TextOperation:
+    def do(self) -> TextOperation:
         ...
 
     @abc.abstractmethod
@@ -26,7 +26,7 @@ class AddCharactersToText(BaseEditorAlteration):
         self._index = index
         self._characters = characters
 
-    def run(self) -> InsertTextOperation:
+    def do(self) -> InsertTextOperation:
         return InsertTextOperation(
             index=self._index,
             value=self._characters

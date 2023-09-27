@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from text_editor.service.invoker import Invoker
+from text_editor.service.invoker import TextCommandInvoker
 
 
 def create_app():
@@ -17,7 +17,7 @@ def create_app():
     text_editor = tk.Text(root, font=('Helvetica', 14), fg='#ECF6FC', bg='#27272C', bd=0)
 
     # define Invoker
-    invoker = Invoker(text_editor=text_editor)
+    invoker = TextCommandInvoker(text_editor=text_editor)
 
     # create Undo button component
     undo_button = tk.Button(root, text='Undo', command=invoker.undo)
