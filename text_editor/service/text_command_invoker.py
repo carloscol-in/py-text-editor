@@ -31,7 +31,7 @@ class TextCommandInvoker:
         self.commands.append(command)
         text_operation = command.do()
 
-        editor_manager = EditorOperationReceiver.manage_editor_with_text_operation(
+        editor_manager = EditorOperationReceiver.build_receiver(
             editor=self._text_editor,
             text_operation=text_operation
         )
@@ -49,7 +49,7 @@ class TextCommandInvoker:
         
         text_operation = command.undo()
 
-        editor_manager = EditorOperationReceiver.manage_editor_with_text_operation(
+        editor_manager = EditorOperationReceiver.build_receiver(
             editor=self._text_editor,
             text_operation=text_operation
         )

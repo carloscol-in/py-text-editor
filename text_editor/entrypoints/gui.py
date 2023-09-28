@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from text_editor.service.invoker import TextCommandInvoker
+from text_editor.service.text_command_invoker import TextCommandInvoker
 
 
 def create_app():
