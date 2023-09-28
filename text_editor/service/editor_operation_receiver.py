@@ -18,7 +18,7 @@ class EditorOperationReceiver:
         self._kwargs = kwargs
 
     @classmethod
-    def build_receiver(
+    def from_editor_and_text_operation(
         cls,
         editor: tk.Text,
         text_operation: TextOperation
