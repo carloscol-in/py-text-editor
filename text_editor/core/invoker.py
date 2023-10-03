@@ -6,7 +6,6 @@ from text_editor.core.operations import TextOperation
 
 
 class TextCommandInvoker:
-    _text_editor: tk.Text
     commands: t.List[BaseEditorAlteration] = []
 
     def invoke(self, command: BaseEditorAlteration) -> TextOperation:
