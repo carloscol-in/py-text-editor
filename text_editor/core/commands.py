@@ -1,5 +1,7 @@
 import abc
 
+from text_editor.core.receiver import EditorOperationReceiver
+
 from .operations import (
     TextOperation,
     InsertTextOperation,
@@ -8,6 +10,10 @@ from .operations import (
     
 
 class BaseEditorAlteration(abc.ABC):
+    _receiver: EditorOperationReceiver
+    index: str
+    characters: str
+
     @abc.abstractmethod
     def do(self) -> TextOperation:
         ...
@@ -17,23 +23,28 @@ class BaseEditorAlteration(abc.ABC):
         ...
 
 
-class AddCharactersToText(BaseEditorAlteration):
+class AddCharacters(BaseEditorAlteration):
     def __init__(
             self,
             index: str,
-            characters: str
+            characters: str,
+            receiver: EditorOperationReceiver
         ):
-        self._index = index
-        self._characters = characters
+        self.index = index
+        self.characters = characters
+        self._receiver = receiver
+
+    def __str__(self):
+        return f'[{self.index}]--{self.characters}'
 
     def do(self) -> InsertTextOperation:
-        return InsertTextOperation(
-            index=self._index,
-            value=self._characters
+        return self._receiver.insert(
+            index=self.index,
+            characters=self.characters
         )
 
-    def undo(self) -> InsertTextOperation:
-        return DeleteTextOperation(
-            index=self._index,
-            value=self._characters
+    def undo(self) -> DeleteTextOperation:
+        return self._receiver.delete(
+            index=self.index,
+            characters=self.characters
         )

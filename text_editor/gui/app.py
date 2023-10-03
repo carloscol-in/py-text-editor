@@ -1,6 +1,7 @@
 import tkinter as tk
+from text_editor.service.client import TextEditorClient
 
-from text_editor.service.text_command_invoker import TextCommandInvoker
+from text_editor.service.invoker import TextCommandInvoker
 
 
 def create_app():
@@ -16,15 +17,15 @@ def create_app():
     # create Text component
     text_editor = tk.Text(root, font=('Helvetica', 14), fg='#ECF6FC', bg='#27272C', bd=0)
 
-    # define Invoker
-    invoker = TextCommandInvoker(text_editor=text_editor)
+    # define client
+    client = TextEditorClient(text_editor=text_editor)
 
     # create Undo button component
-    undo_button = tk.Button(root, text='Undo', command=invoker.undo)
+    undo_button = tk.Button(root, text='Undo', command=client.undo)
     undo_button.place(x=10, y=10)
 
     # bindings
-    text_editor.bind('<Key>', invoker)
+    text_editor.bind('<Key>', client.write)
 
     canvas.create_window(34, 50, anchor='nw', width=300, height=200, window=text_editor)
 
