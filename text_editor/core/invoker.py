@@ -25,3 +25,7 @@ class TextCommandInvoker:
         text_operation = command.undo()
 
         return text_operation
+    
+    @property
+    def command_stack_is_empty(self) -> bool:
+        return len(self.commands) == 0

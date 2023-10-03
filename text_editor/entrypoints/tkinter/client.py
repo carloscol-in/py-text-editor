@@ -5,16 +5,27 @@ from text_editor.core.commands import AddCharacters
 from text_editor.core.receiver import EditorOperationReceiver
 from text_editor.service.enums import AlterationTypes
 from text_editor.service.models import EditorOperation
-from text_editor.service.invoker import TextCommandInvoker
+from text_editor.core.invoker import TextCommandInvoker
 from text_editor.service.utils import get_alteration_type_and_value
 
 
 class TextEditorClient:
     _text_editor: tk.Text
+    _undo_button: tk.Button
 
-    def __init__(self, text_editor: tk.Text):
+    def __init__(
+        self,
+        text_editor: tk.Text,
+        undo_button: tk.Button
+    ):
         self._text_editor = text_editor
+        self._undo_button = undo_button
+
         self._invoker = TextCommandInvoker()
+
+        state = 'disabled' if self._invoker.command_stack_is_empty else 'enabled'
+
+        self._undo_button.configure(command=self.undo, state=state)
     
     def run_editor_operation(self, operation: EditorOperation):
         f = getattr(self._text_editor, operation.method)
@@ -43,6 +54,9 @@ class TextEditorClient:
         )
 
         self.run_editor_operation(editor_operation)
+            
+        if self._undo_button['state'] == 'disabled':
+            self._undo_button.configure(state='normal')
 
         # override normal use, let editor_manager handle the text
         return 'break'
@@ -58,3 +72,6 @@ class TextEditorClient:
         )
 
         self.run_editor_operation(editor_operation)
+
+        if self._invoker.command_stack_is_empty:
+            self._undo_button.configure(state='disabled')
