@@ -29,4 +29,4 @@ def create_app():
 
     canvas.create_window(34, 50, anchor='nw', width=300, height=200, window=text_editor)
 
-    return root
+    root.mainloop()
