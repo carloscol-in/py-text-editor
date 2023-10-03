@@ -1,5 +1,5 @@
 import tkinter as tk
-from text_editor.service.client import TextEditorClient
+from text_editor.gui.tkinter.client import TextEditorClient
 
 from text_editor.service.invoker import TextCommandInvoker
 

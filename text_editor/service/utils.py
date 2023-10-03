@@ -1,6 +1,6 @@
 import string
 
-from text_editor.service.alteration_types import AlterationTypes
+from text_editor.service.enums import AlterationTypes
 from text_editor.gui.tkinter.supported_events import SupportedTextEvents
 
 
