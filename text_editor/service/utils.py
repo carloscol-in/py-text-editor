@@ -1,7 +1,7 @@
 import string
 
 from text_editor.service.enums import AlterationTypes
-from text_editor.gui.tkinter.supported_events import SupportedTextEvents
+from text_editor.entrypoints.tkinter.supported_events import SupportedTextEvents
 
 
 def get_alteration_type_and_value(event):
