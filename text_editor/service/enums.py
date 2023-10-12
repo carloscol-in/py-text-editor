@@ -1,6 +1,6 @@
 import enum
 
 
-class AlterationTypes(enum.StrEnum):
+class AlterationType(enum.StrEnum):
     CHAR = enum.auto()
     BACKSPACE = enum.auto()

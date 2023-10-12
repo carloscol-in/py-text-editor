@@ -2,7 +2,7 @@ import tkinter as tk
 import typing as t
 
 from text_editor.core.commands import BaseEditorAlteration
-from text_editor.core.operations import TextOperation
+from text_editor.core.interfaces.operations import TextOperation
 
 
 class TextCommandInvoker:
@@ -11,19 +11,15 @@ class TextCommandInvoker:
     def invoke(self, command: BaseEditorAlteration) -> TextOperation:
         self.commands.append(command)
 
-        text_operation = command.do()
-
-        return text_operation
+        return command.do()
     
     def rollback(self) -> TextOperation:
-        if len(self.commands) == 0:
+        if self.command_stack_is_empty:
             return
         
         command = self.commands.pop()
-        
-        text_operation = command.undo()
 
-        return text_operation
+        return command.undo()
     
     @property
     def command_stack_is_empty(self) -> bool:

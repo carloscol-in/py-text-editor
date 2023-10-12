@@ -2,11 +2,12 @@ import tkinter as tk
 import typing as t
 
 from text_editor.core.commands import AddCharacters
-from text_editor.core.receiver import EditorOperationReceiver
-from text_editor.service.enums import AlterationTypes
-from text_editor.service.models import EditorOperation
-from text_editor.core.invoker import TextCommandInvoker
-from text_editor.service.utils import get_alteration_type_and_value
+from text_editor.core.interfaces.operations import TextOperation
+from text_editor.entrypoints.tkinter.operations import DeleteTextOperation, InsertTextOperation
+from text_editor.entrypoints.tkinter.receiver import TkinterEditorOperationReceiver
+from text_editor.entrypoints.tkinter.supported_events import SupportedTextEvents
+from text_editor.service.enums import AlterationType
+from text_editor.service.invoker import TextCommandInvoker
 
 
 class TextEditorClient:
@@ -26,34 +27,45 @@ class TextEditorClient:
         state = 'disabled' if self._invoker.command_stack_is_empty else 'enabled'
 
         self._undo_button.configure(command=self.undo, state=state)
+
+    def _map_event_to_alteration_type(self, event: tk.Event) -> AlterationType:
+        if event.keysym == SupportedTextEvents.BACKSPACE:
+            return AlterationType.BACKSPACE
+        elif event.keysym == SupportedTextEvents.SPACE:
+            return AlterationType.CHAR
+        elif event.char != '':
+            return AlterationType.CHAR
     
-    def run_editor_operation(self, operation: EditorOperation):
+    def run_editor_operation(self, operation: TextOperation):
         f = getattr(self._text_editor, operation.method)
-        f(**operation.kwargs)
+        f(**operation.to_dict())
 
     def write(self, event: tk.Event):
-        alteration_type, value = get_alteration_type_and_value(event)
+        alteration_type = self._map_event_to_alteration_type(
+            event=event
+        )
 
-        index = self._text_editor.index(tk.INSERT)
+        index = len(self._text_editor.get('1.0', tk.END + '-1c'))
+
+        cursor_position = self._text_editor.index(tk.INSERT)
+        row, column = (int(x) for x in cursor_position.split('.'))
 
         # choose the command
-        if alteration_type == AlterationTypes.CHAR:
+        if alteration_type == AlterationType.CHAR:
             command = AddCharacters(
                 index=index,
-                characters=value,
-                receiver=EditorOperationReceiver()
+                row=row,
+                column=column,
+                characters=event.char,
+                receiver=TkinterEditorOperationReceiver()
             )
         else:
             # ignore unsupported char types
             return
 
-        text_operation = self._invoker.invoke(command=command)
+        operation: InsertTextOperation = self._invoker.invoke(command=command)
 
-        editor_operation = EditorOperation.from_text_operation(
-            operation=text_operation
-        )
-
-        self.run_editor_operation(editor_operation)
+        self.run_editor_operation(operation)
             
         if self._undo_button['state'] == 'disabled':
             self._undo_button.configure(state='normal')
@@ -62,16 +74,18 @@ class TextEditorClient:
         return 'break'
     
     def undo(self):
-        text_operation = self._invoker.rollback()
+        operation: DeleteTextOperation = self._invoker.rollback()
 
-        if text_operation is None:
+        if operation is None:
             return
 
-        editor_operation = EditorOperation.from_text_operation(
-            operation=text_operation
-        )
+        self.run_editor_operation(operation)
 
-        self.run_editor_operation(editor_operation)
+        index = operation.index1
 
+        # set cursor at place before writing the characters
+        self._text_editor.mark_set('insert', index)
+
+        # disable 'undo' button if commands stack is empty
         if self._invoker.command_stack_is_empty:
             self._undo_button.configure(state='disabled')

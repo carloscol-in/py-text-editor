@@ -1,18 +1,37 @@
 import abc
 
-from text_editor.core.receiver import EditorOperationReceiver
+from text_editor.core.interfaces.receiver import EditorOperationReceiver
 
-from .operations import (
+from .interfaces.operations import (
     TextOperation,
-    InsertTextOperation,
-    DeleteTextOperation
 )
+
+
+class CommandMetadata:
+    ...
     
 
 class BaseEditorAlteration(abc.ABC):
+
     _receiver: EditorOperationReceiver
-    index: str
+    index: int
+    row: int
+    column: int
     characters: str
+
+    def __init__(
+        self,
+        characters: str,
+        index: int,
+        row: int,
+        column: int,
+        receiver: EditorOperationReceiver
+    ):
+        self.characters = characters
+        self.index = index
+        self.row = row
+        self.column = column
+        self._receiver = receiver
 
     @abc.abstractmethod
     def do(self) -> TextOperation:
@@ -24,27 +43,38 @@ class BaseEditorAlteration(abc.ABC):
 
 
 class AddCharacters(BaseEditorAlteration):
+
     def __init__(
-            self,
-            index: str,
-            characters: str,
-            receiver: EditorOperationReceiver
-        ):
-        self.index = index
-        self.characters = characters
-        self._receiver = receiver
+        self,
+        characters: str,
+        index: int,
+        row: int,
+        column: int,
+        receiver: EditorOperationReceiver
+    ):
+        super().__init__(
+            characters,
+            index,
+            row,
+            column,
+            receiver
+        )
 
     def __str__(self):
         return f'[{self.index}]--{self.characters}'
 
-    def do(self) -> InsertTextOperation:
+    def do(self) -> TextOperation:
         return self._receiver.insert(
             index=self.index,
+            row=self.row,
+            column=self.column,
             characters=self.characters
         )
 
-    def undo(self) -> DeleteTextOperation:
+    def undo(self) -> TextOperation:
         return self._receiver.delete(
             index=self.index,
+            row=self.row,
+            column=self.column,
             characters=self.characters
         )
