@@ -1,3 +1,4 @@
+import dataclasses
 import tkinter as tk
 import typing as t
 
@@ -5,9 +6,15 @@ from text_editor.core.commands import AddCharacters
 from text_editor.core.interfaces.operations import TextOperation
 from text_editor.entrypoints.tkinter.operations import DeleteTextOperation, InsertTextOperation
 from text_editor.entrypoints.tkinter.receiver import TkinterEditorOperationReceiver
-from text_editor.entrypoints.tkinter.supported_events import SupportedTextEvents
+from text_editor.entrypoints.tkinter.supported_events import SupportedTextEvent
 from text_editor.service.enums import AlterationType
 from text_editor.service.invoker import TextCommandInvoker
+
+
+@dataclasses.dataclass(frozen=True)
+class AlterationTypeCharacterTuple:
+    alteration_type: AlterationType
+    character: t.Optional[str]
 
 
 class TextEditorClient:
@@ -28,21 +35,50 @@ class TextEditorClient:
 
         self._undo_button.configure(command=self.undo, state=state)
 
-    def _map_event_to_alteration_type(self, event: tk.Event) -> AlterationType:
-        if event.keysym == SupportedTextEvents.BACKSPACE:
-            return AlterationType.BACKSPACE
-        elif event.keysym == SupportedTextEvents.SPACE:
-            return AlterationType.CHAR
+    def _map_event_to_alteration_type_and_character(
+        self,
+        event: tk.Event
+    ) -> t.Optional[AlterationTypeCharacterTuple]:
+        alterationtype_character = None
+
+        if event.keysym == SupportedTextEvent.BACKSPACE:
+            alterationtype_character = AlterationTypeCharacterTuple(
+                alteration_type=AlterationType.BACKSPACE,
+                character=None
+            )
+        elif event.keysym == SupportedTextEvent.SPACE:
+            alterationtype_character = AlterationTypeCharacterTuple(
+                alteration_type=AlterationType.CHAR,
+                character=' '
+            )
+        elif event.keysym == SupportedTextEvent.RETURN:
+            alterationtype_character = AlterationTypeCharacterTuple(
+                alteration_type=AlterationType.CHAR,
+                character='\n'
+            )
         elif event.char != '':
-            return AlterationType.CHAR
+            alterationtype_character = AlterationTypeCharacterTuple(
+                alteration_type=AlterationType.CHAR,
+                character=event.char
+            )
+        
+        return alterationtype_character
     
     def run_editor_operation(self, operation: TextOperation):
         f = getattr(self._text_editor, operation.method)
         f(**operation.to_dict())
 
     def write(self, event: tk.Event):
-        alteration_type = self._map_event_to_alteration_type(
+        alterationtype_character = self._map_event_to_alteration_type_and_character(
             event=event
+        )
+
+        if alterationtype_character is None:
+            return
+        
+        alteration_type, character = (
+            alterationtype_character.alteration_type,
+            alterationtype_character.character
         )
 
         index = len(self._text_editor.get('1.0', tk.END + '-1c'))
@@ -56,7 +92,7 @@ class TextEditorClient:
                 index=index,
                 row=row,
                 column=column,
-                characters=event.char,
+                characters=character,
                 receiver=TkinterEditorOperationReceiver()
             )
         else:
