@@ -11,10 +11,10 @@ class TkinterEditorOperationReceiver(EditorOperationReceiver):
 
     def insert(
         self,
-        index: int,
         row: int,
         column: int,
-        characters: str
+        characters: str,
+        **kwargs: t.Dict
     ) -> InsertTextOperation:
         idx = f'{row}.{column}'
 
@@ -25,10 +25,10 @@ class TkinterEditorOperationReceiver(EditorOperationReceiver):
     
     def delete(
         self,
-        index: int,
         row: int,
         column: int,
-        characters: str
+        characters: str,
+        **kwargs: t.Dict
     ) -> DeleteTextOperation:
         text_length = len(characters)
 
